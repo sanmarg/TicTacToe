@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Tic Tac Toe❤️</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-GLhlTQ8iRABdZLl6O3oVMWSktQOp6b7In1Zl3/Jr59b6EGGoI1aFkw7cmDA6j6gD" crossorigin="anonymous">
+        <link rel="stylesheet" href="../static/style.css">
+        <link rel="shortcut icon" href="/static/favicon.ico" type="image/x-icon">
+    </head>
+    <body>
+        
+        <center><div class="header">
+            <img class="icon" src="/static/icon.jpg" alt="" width="100px">
+            <h1 style="width:50%"><b>Tic Tac Toe</b></h1>
+        </div>
+        <h2><strong>Welcome {{fplayer}} And {{splayer}}</strong><br>{{fplayer}}: X <br>{{splayer}}: O</h2>
+
+        <table>
+            {% for i in range(3) %}
+                <tr>
+                    {% for j in range(3) %}
+                        <td>
+                            {% if game[i][j] %}
+                                <b>{{ game[i][j] }}</b>
+                            {% else %}
+                                <a  href="{{ url_for('play', row=i, col=j) }}" href="/play/1/2">✏️</a>
+                            {% endif %}
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </table>
+        <br>
+        <a id="reset" href="{{ url_for('reset') }}">Reset</a>
+    </center>
+    </body>
+</html>
