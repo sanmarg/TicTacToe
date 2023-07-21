@@ -8,6 +8,6 @@ RUN git clone https://github.com/sanmarg/TicTacToe
 
 RUN mv ./TicTacToe/* /app/ ; rm -rf TicTacToe
 
-EXPOSE 5000
+EXPOSE 5000/http
 
 CMD ["python","application.py"]
