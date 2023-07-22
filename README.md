@@ -1,5 +1,6 @@
 # TicTacToe
-Python|Flask|JEnkins|docker
+Python | Flask | Jenkins | docker
+
 Tic Tac Toe Multiplayer Game in Flask
 
 
