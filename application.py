@@ -1,17 +1,24 @@
-from flask import Flask, render_template, session, redirect, url_for,request
+from flask import Flask, render_template, session, redirect, url_for, request
 from flask_session import Session
 from tempfile import mkdtemp
 from opentelemetry.instrumentation.flask import FlaskInstrumentor
 from opentelemetry.sdk.trace import TracerProvider
-from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.exporter.jaeger.thrift import JaegerExporter
 from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 app = Flask(__name__)
 
 # Setup OpenTelemetry Tracing
 trace_provider = TracerProvider()
-otlp_exporter = OTLPSpanExporter(endpoint="http://otel-collector:4317")
-span_processor = BatchSpanProcessor(otlp_exporter)
+
+# Setup Jaeger Exporter (adjust Jaeger service address accordingly)
+jaeger_exporter = JaegerExporter(
+    agent_host_name="jaeger-agent",  # Change this to the actual service name in your k8s cluster
+    agent_port=5775
+)
+
+# Adding the BatchSpanProcessor to send traces to Jaeger
+span_processor = BatchSpanProcessor(jaeger_exporter)
 trace_provider.add_span_processor(span_processor)
 
 # Instrument Flask with OpenTelemetry
@@ -21,7 +28,6 @@ app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
 app.config["SESSION_TYPE"] = "filesystem"
 Session(app)
-
 
 def check_winner(board):
     for i in range(3):
@@ -40,10 +46,10 @@ def check_winner(board):
 def start():
     return render_template("launch.html")
 
-@app.route('/', methods=['POST','GET'])
+@app.route('/', methods=['POST', 'GET'])
 def my_form_post():
-    if request.method=="POST":
-        global fplayer,splayer
+    if request.method == "POST":
+        global fplayer, splayer
         fplayer = request.form['name']
         splayer = request.form['username']
         fplayer = fplayer.upper()
@@ -52,18 +58,16 @@ def my_form_post():
 
 @app.route("/play")
 def index():
-
     if "board" not in session:
         global board
         session["board"] = [[None, None, None], [None, None, None], [None, None, None]]
         board = session["board"]
-        session["turn"] = "X" 
+        session["turn"] = "X"
         winner = check_winner(session["board"])
         if winner is not None:
             return render_template('winner.html', winner=winner)
 
-    return render_template("game.html", fplayer=fplayer,splayer=splayer,game=session["board"], turn=session["turn"])
-
+    return render_template("game.html", fplayer=fplayer, splayer=splayer, game=session["board"], turn=session["turn"])
 
 @app.route("/reset")
 def reset():
@@ -73,11 +77,11 @@ def reset():
 @app.route("/play/<int:row>/<int:col>")
 def play(row, col):
     if session["turn"] == "X":
-        session["board"][row][col]="X"
-        session["turn"]="Y"
+        session["board"][row][col] = "X"
+        session["turn"] = "Y"
     else:
-        session["board"][row][col]="O"
-        session["turn"]="X"
+        session["board"][row][col] = "O"
+        session["turn"] = "X"
 
     winner = check_winner(session["board"])
     if winner is not None:
