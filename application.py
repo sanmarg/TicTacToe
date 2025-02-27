@@ -1,8 +1,21 @@
 from flask import Flask, render_template, session, redirect, url_for,request
 from flask_session import Session
 from tempfile import mkdtemp
+from opentelemetry.instrumentation.flask import FlaskInstrumentor
+from opentelemetry.sdk.trace import TracerProvider
+from opentelemetry.exporter.otlp.proto.grpc.trace_exporter import OTLPSpanExporter
+from opentelemetry.sdk.trace.export import BatchSpanProcessor
 
 app = Flask(__name__)
+
+# Setup OpenTelemetry Tracing
+trace_provider = TracerProvider()
+otlp_exporter = OTLPSpanExporter(endpoint="http://otel-collector:4317")
+span_processor = BatchSpanProcessor(otlp_exporter)
+trace_provider.add_span_processor(span_processor)
+
+# Instrument Flask with OpenTelemetry
+FlaskInstrumentor().instrument_app(app)
 
 app.config["SESSION_FILE_DIR"] = mkdtemp()
 app.config["SESSION_PERMANENT"] = False
