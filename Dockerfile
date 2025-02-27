@@ -3,7 +3,7 @@ FROM python:3
 # Install required Python dependencies
 RUN pip install flask Flask_session requests \
     opentelemetry-sdk opentelemetry-instrumentation-flask \
-    opentelemetry-exporter-otlp
+    opentelemetry-exporter-jaeger
 
 WORKDIR /app/
 
